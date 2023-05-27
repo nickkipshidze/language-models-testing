@@ -14,10 +14,10 @@ def count_words(text: str) -> dict:
     return frequency
 
 def generate_preview(content: str) -> None:
-    preview_dir = "./preview"
-    template = open(f"{preview_dir}/layout.html", "r").read()
+    preview_dir: str = "./preview"
+    template: str = open(f"{preview_dir}/layout.html", "r").read()
     
-    index = template.replace("{{ content }}", content)
+    index: str = template.replace("{{ content }}", content)
 
     open(f"{preview_dir}/index.html", "w").write(index)
 
@@ -34,7 +34,7 @@ def main() -> None:
 
     print("GENERATED:", end=" ")
 
-    generation = ""
+    generation: str = ""
 
     try:
         word: int = random.randint(len(words)//4, len(words))

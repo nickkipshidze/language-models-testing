@@ -22,7 +22,7 @@ def generate_preview(content: str) -> None:
     open(f"{preview_dir}/index.html", "w").write(index)
 
 def main() -> None:
-    text: str = open("./text.txt", "r").read()
+    text: str = open("./OtoGPT/text.txt", "r").read()
 
     words: list = text.lower().split(" ")
     frequency: dict = count_words(text)

@@ -1,50 +1,79 @@
-import random, time
+import random
 
-def generate_multigram(text: str, group_size: int) -> dict:
-    words: list = text.lower().replace("\n", "").split(" ")
-    multigram: dict = {}
+class Multigrams:
+    def __init__(self, dataset_file: str) -> None:
+        print(f"[Multigrams] Reading '{dataset_file}';")
 
-    for index in range(len(words)):
-        group = words[index:index+group_size]
-        if len(group) < group_size: break
+        self.dataset: list = \
+            open(dataset_file, "r").read().lower().split(" ")
 
-        if " ".join(group[:-1]) in multigram:
-            multigram[" ".join(group[:-1])].append(index)
-        else:
-            multigram[" ".join(group[:-1])] = []
+        print(f"[Multigrams] Dataset initialized;")
     
-    return {k: v for k, v in multigram.items() if v}
+    def generate_multigram(self, group_size: int) -> dict:
+        print(f"[Multigrams] Generating multigram, {group_size=};")
 
+        multigram: dict = {}
+
+        # Create a multigram
+        for index in range(len(self.dataset)):
+            group = self.dataset[index:index + group_size]
+
+            # If we hit the end of the dataset
+            if len(group) < group_size: break
+            
+            if " ".join(group[:-1]) in multigram:
+                multigram[
+                    " ".join(group[:-1])
+                ].append(index)
+
+            else:
+                multigram[
+                    " ".join(group[:-1])
+                ] = [index]
+        
+        # Clean dict from empty values
+        self.multigram: dict = {key: value for key, value in multigram.items() if value}
+        self.group_size: int = group_size
+        
+        print("[Multigrams] Multigram generated;")
+
+        return self.multigram
+    
+    def generate_next(self, params: list) -> str:
+        # Convert list to string
+
+        params: str = " ".join(
+            params[-(self.group_size - 1):]
+        )
+
+        if params in self.multigram:
+            # If the parameters were found in multigram
+
+            return self.dataset[
+                random.choice(
+                    self.multigram[params]
+                ) + (self.group_size - 1)
+            ]
+        
+        else:
+            # If the parameters were not found in multigram
+
+            return self.dataset[
+                self.dataset.index(
+                    params.split(" ")[-1]
+                ) + 1
+            ]
+        
 def main() -> None:
-    text: str = open("./data.txt", "r").read()
+    multigram = Multigrams("./data.txt")
+    multigram.generate_multigram(3)
 
-    words: list = text.lower().replace("\n", "").split(" ")
-    group_size: int = 3
-    multigram: dict = generate_multigram(text, group_size)
+    generation: list = input("\nPrompt: ").lower().split(" ")
 
-    print("TEXT LENGTH    :", len(text))
-    print("DATABASE WORDS :", len(words))
-    print("NODES          :", len(multigram))
-    input("")
+    while generation[-1][-1] != ".":
+        generation.append(multigram.generate_next(generation))
 
-    print("GENERATED:", end=" ")
-
-    generation: list = []
-
-    try:
-        word: int = random.randint(len(words)//4, len(words))
-
-        while word < len(words):
-            if " ".join(generation[-(group_size-1):]) in multigram:
-                word = random.choice(multigram[" ".join(generation[-(group_size-1):])]) + (group_size - 1)
-                time.sleep(0.1)
-            
-            generation.append(words[word])
-            print(generation[-1], end = " ", flush = True)
-            
-            word += 1
-    except KeyboardInterrupt:
-        print("\n\nStopping...")
+    print(" ".join(generation))
 
 if __name__ == "__main__":
     main()
